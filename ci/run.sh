@@ -21,6 +21,18 @@ rclone copy "$RC/scripts/state" "$HOME/Clipping/automation/" 2>/dev/null   # feh
 rclone lsf -R "$RC/fertig" --include "*.mp4" --files-only | while read -r p; do mkdir -p "$CLIP/fertig/$(dirname "$p")"; : > "$CLIP/fertig/$p"; done
 rclone lsf "$RC/abgelehnt" --include "*.txt" --files-only | while read -r p; do : > "$CLIP/abgelehnt/$p"; done
 
+# Erlaubnisliste auf die echten Linux-Pfade erweitern (auf dem Mac stehen dort /Users/mio-Pfade;
+# hier ist /Users/mio nur ein Verweis, Claude prüft aber die echten Pfade)
+REAL=$(readlink -f "$HOME/Clipping")
+S="$HOME/Clipping/automation/settings.json"
+jq --arg c "$CLIP" --arg r "$REAL" --arg h "$HOME" '
+  .permissions.allow += [
+    "Read(/\($c)/**)", "Edit(/\($c)/**)", "Write(/\($c)/**)",
+    "Read(/\($r)/**)", "Edit(/\($r)/**)", "Write(/\($r)/**)",
+    "Read(//Users/mio/**)", "Edit(//Users/mio/**)", "Write(//Users/mio/**)",
+    "Read(/\($h)/**)", "Edit(/\($h)/**)", "Write(/\($h)/**)" ]
+  | .permissions.additionalDirectories = [$c, $r, "/Users/mio/Clipping"]' "$S" > "$S.tmp" && mv "$S.tmp" "$S"
+
 CLIP_OVERRIDE="$CLIP" MAX_PRO_LAUF="${MAX_PRO_LAUF:-4}" bash "$HOME/Clipping/automation/cut_inbox.sh"
 
 # Ergebnisse hochladen (nur echte Dateien, keine 0-Byte-Platzhalter)
