@@ -1,0 +1,84 @@
+name: Clips schneiden
+# Schaut alle 15 Minuten in Drive/Clipping/eingang. Liegt dort etwas von Grok: schneiden und fertige Clips ins Drive legen.
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      max:
+        description: "Höchstens so viele Clips in diesem Lauf"
+        default: "4"
+concurrency:
+  group: clipping
+  cancel-in-progress: false
+permissions:
+  contents: read
+jobs:
+  schneiden:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: Clipping
+      - name: Pfade wie auf dem Mac
+        run: |
+          ln -s "$GITHUB_WORKSPACE/Clipping" "$HOME/Clipping"
+          sudo mkdir -p /Users && sudo ln -s "$HOME" /Users/mio
+      - name: Drive verbinden
+        env:
+          RCLONE_CONF: ${{ secrets.RCLONE_CONF }}
+        run: |
+          curl -fsSL https://rclone.org/install.sh | sudo bash >/dev/null
+          mkdir -p ~/.config/rclone && printf '%s\n' "$RCLONE_CONF" > ~/.config/rclone/rclone.conf
+      - name: Eingang prüfen
+        id: check
+        run: |
+          n=$( { rclone lsf gdrive:Clipping/eingang --include "momente_*.jsonl" --files-only; rclone lsf gdrive:Clipping/eingang/in_arbeit --include "momente_*.jsonl" --files-only; } 2>/dev/null | wc -l)
+          echo "Dateien im Eingang: $n"
+          if [ "$n" -gt 0 ]; then echo "arbeit=ja" >> "$GITHUB_OUTPUT"; else echo "arbeit=nein" >> "$GITHUB_OUTPUT"; fi
+      - name: Systemwerkzeuge
+        if: steps.check.outputs.arbeit == 'ja'
+        run: |
+          echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | sudo debconf-set-selections
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg jq mesa-vulkan-drivers libvulkan1 ttf-mscorefonts-installer fonts-noto-color-emoji >/dev/null
+          pip install -q -U yt-dlp
+      - uses: actions/setup-node@v4
+        if: steps.check.outputs.arbeit == 'ja'
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Clipping/studio/package-lock.json
+      - uses: actions/setup-python@v5
+        if: steps.check.outputs.arbeit == 'ja'
+        with:
+          python-version: "3.12"
+      - name: Cache (WhisperX, Modelle, Real-ESRGAN)
+        if: steps.check.outputs.arbeit == 'ja'
+        uses: actions/cache@v4
+        with:
+          path: |
+            Clipping/tools
+            ~/.cache/huggingface
+            ~/.cache/torch
+          key: werkzeuge-v1
+      - name: Werkzeuge installieren
+        if: steps.check.outputs.arbeit == 'ja'
+        run: |
+          cd "$HOME/Clipping"
+          [ -x tools/whisperx-venv/bin/python ] || { python -m venv tools/whisperx-venv && tools/whisperx-venv/bin/pip install -q whisperx; }
+          if [ ! -x tools/realesrgan/realesrgan-ncnn-vulkan ]; then
+            mkdir -p tools/realesrgan && cd tools/realesrgan
+            curl -fsSL -o r.zip https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesrgan-ncnn-vulkan-20220424-ubuntu.zip
+            unzip -q r.zip && rm r.zip && chmod +x realesrgan-ncnn-vulkan && cd ../..
+          fi
+          cd studio && npm ci --silent && npx remotion browser ensure >/dev/null
+          npm install -g @anthropic-ai/claude-code >/dev/null
+      - name: Schneiden
+        if: steps.check.outputs.arbeit == 'ja'
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          MAX_PRO_LAUF: ${{ github.event.inputs.max || '4' }}
+        run: bash "$HOME/Clipping/ci/run.sh"

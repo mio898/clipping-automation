@@ -1,0 +1,19 @@
+{
+ "streamer": "trymacs",
+ "facecam": {
+  "x": 1440,
+  "y": 590,
+  "w": 480,
+  "h": 490
+ },
+ "hinweis": "Freigestellte Cam (kein Rahmen) unten rechts x 1440–1920, y 590–1080; Minimap unten links bis x ~320, y 870–1070. Gameplay-Box links von x 1430 halten.",
+ "stand": "2026-11-19, aus VOD 2932202670",
+ "dreieck": {
+  "zoom": 1.6,
+  "fx": 0.33,
+  "fy": 0.3,
+  "R": 380,
+  "y1": 0.95,
+  "seit": "2026-11-19, Mio: jeder Trymacs-Clip, nur der Kopf als Dreieck, normale Cam, kein Schriftzug"
+ }
+}

@@ -1,0 +1,43 @@
+{
+ "permissions": {
+  "allow": [
+   "Bash(cd:*)",
+   "Bash(yt-dlp:*)",
+   "Bash(ffmpeg:*)",
+   "Bash(ffprobe:*)",
+   "Bash(caffeinate:*)",
+   "Bash(node /Users/mio/Clipping/studio/transcribe.mjs:*)",
+   "Bash(node /Users/mio/Clipping/studio/build-clip.mjs:*)",
+   "Bash(node /Users/mio/Clipping/studio/tools/upscale-cam.mjs:*)",
+   "Bash(mkdir:*)",
+   "Bash(mv:*)",
+   "Bash(ls:*)",
+   "Bash(cat:*)",
+   "Bash(head:*)",
+   "Bash(tail:*)",
+   "Bash(date:*)",
+   "Bash(wc:*)",
+   "Bash(sort:*)",
+   "Bash(jq:*)",
+   "Read(~/Clipping/**)",
+   "Edit(~/Clipping/**)",
+   "Read(~/Library/CloudStorage/**)",
+   "Edit(~/Library/CloudStorage/**)",
+   "Glob",
+   "Grep",
+   "Bash(bash /Users/mio/Clipping/studio/tools/prep.sh:*)",
+   "Bash(node /Users/mio/Clipping/studio/tools/schnitt-block.mjs:*)",
+   "Bash(bash /Users/mio/Clipping/studio/tools/voice.sh:*)"
+  ],
+  "deny": [
+   "Bash(curl:*)",
+   "Bash(git push:*)",
+   "Bash(sudo:*)",
+   "Bash(open:*)",
+   "WebFetch",
+   "WebSearch",
+   "Bash(rm -rf /:*)",
+   "Bash(rm -rf ~:*)"
+  ]
+ }
+}
