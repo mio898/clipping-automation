@@ -79,7 +79,7 @@ const link = path.join(pubDir, `${id}.mp4`);
 fs.rmSync(link, {force: true}); try { fs.linkSync(path.join(work, 'raw.mp4'), link); } catch { fs.copyFileSync(path.join(work, 'raw.mp4'), link); } // immer frisch verlinken, sonst bleibt alte Quelle hängen
 // KI-geschärfte Facecam (tools/upscale-cam.mjs), falls vorhanden
 let facecamVideo = null;
-if (spec.facecam && !process.argv.includes('--ohne-upscale')) {
+if (spec.facecam && !process.argv.includes('--ohne-upscale') && !process.env.OHNE_UPSCALE) {
   execFileSync('node', [path.resolve('tools/upscale-cam.mjs'), work], {stdio: 'inherit'});
   const camLink = path.join(pubDir, `${id}_cam.mp4`);
   fs.rmSync(camLink, {force: true}); try { fs.linkSync(path.join(work, 'cam_up.mp4'), camLink); } catch { fs.copyFileSync(path.join(work, 'cam_up.mp4'), camLink); }
