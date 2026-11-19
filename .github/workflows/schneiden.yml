@@ -36,6 +36,7 @@ jobs:
         run: |
           n=$( { rclone lsf gdrive:Clipping/eingang --include "momente_*.jsonl" --files-only; rclone lsf gdrive:Clipping/eingang/in_arbeit --include "momente_*.jsonl" --files-only; } 2>/dev/null | wc -l)
           echo "Dateien im Eingang: $n"
+          if [ -e "$HOME/Clipping/ci/PAUSE" ]; then echo "Pausiert (ci/PAUSE)"; n=0; fi
           if [ "$n" -gt 0 ]; then echo "arbeit=ja" >> "$GITHUB_OUTPUT"; else echo "arbeit=nein" >> "$GITHUB_OUTPUT"; fi
       - name: Systemwerkzeuge
         if: steps.check.outputs.arbeit == 'ja'
@@ -79,7 +80,6 @@ jobs:
         if: steps.check.outputs.arbeit == 'ja'
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          OHNE_UPSCALE: "1"        # KI-Schärfen ohne Grafikkarte zu langsam (Stunden pro Clip)
           CLAUDE_TIMEOUT: "45m"     # ein Clip darf nie den ganzen Lauf blockieren
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
           MAX_PRO_LAUF: ${{ github.event.inputs.max || '4' }}

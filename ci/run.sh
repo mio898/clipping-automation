@@ -3,6 +3,8 @@
 # Postet nie etwas. Gibt keine Geheimnisse aus.
 set -uo pipefail
 RC="gdrive:Clipping"
+# Pause-Schalter: Datei ci/PAUSE im Repo → GitHub schneidet nichts (z. B. solange der Mac schneidet)
+if [ -e "$HOME/Clipping/ci/PAUSE" ]; then echo "Pausiert (ci/PAUSE)."; echo "arbeit=nein" >> "$GITHUB_OUTPUT"; exit 0; fi
 CLIP="$HOME/clip"            # lokale Arbeitskopie des Drive-Ordners
 mkdir -p "$CLIP"/{eingang/in_arbeit,eingang/erledigt,fertig,abgelehnt,log,kampagnen,scripts/state}
 
