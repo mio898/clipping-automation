@@ -56,8 +56,10 @@ for f in eingang/in_arbeit/momente_*.jsonl; do
     GESCHNITTEN=$((GESCHNITTEN+1)); say "✂️ schneide $id (Variante $VAR)"
     antwort=$( { cat "$AUTO/cut_moment_prompt.md"
                  printf '\n\n---\nArbeitsordner (CLIP): %s\nDatum für die Spec: %s\nVariante: %s\nMoment:\n%s\n' "$CLIP" "$(date +%F)" "$VAR" "$line"; } | \
-      claude -p --output-format text --settings "$AUTO/settings.json" --permission-mode dontAsk \
-        --add-dir "$HOME/Clipping" "$CLIP" 2>&1 )
+      claude -p --output-format stream-json --verbose --settings "$AUTO/settings.json" --permission-mode dontAsk \
+        --add-dir "$HOME/Clipping" "$CLIP" 2>&1 | tee "$AUTO/letzter_lauf.jsonl" | jq -rR 'fromjson? | select(.type=="result") | .result // empty' )
+    # Blockierte Befehle sichtbar machen (Diagnose)
+    jq -rR 'fromjson? | select(.type=="result") | .permission_denials[]? | "   ⛔ blockiert: \(.tool_name) \(.tool_input.command // .tool_input.file_path // "")"' "$AUTO/letzter_lauf.jsonl" 2>/dev/null | head -10 | while read -r l; do say "$l"; done
     if [ -n "$(find fertig -name "$id.mp4" -print -quit)" ]; then say "✅ $id fertig – $(echo "$antwort" | tail -3 | tr '\n' ' ')"
     elif [ -e "abgelehnt/$id.txt" ]; then say "🛑 $id Notbremse: $(head -1 "abgelehnt/$id.txt")"
     else echo "$id" >> "$FEHL"; offen=1; say "❌ $id kein Clip entstanden – $(echo "$antwort" | tail -2 | tr '\n' ' ')"; fi

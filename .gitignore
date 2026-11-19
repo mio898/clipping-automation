@@ -10,3 +10,4 @@ automation/fehlversuche.txt
 automation/variante_zaehler.txt
 *.bak-*
 .DS_Store
+automation/letzter_lauf.jsonl
