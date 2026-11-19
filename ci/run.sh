@@ -33,7 +33,7 @@ jq --arg c "$CLIP" --arg r "$REAL" --arg h "$HOME" '
     "Read(/\($h)/**)", "Edit(/\($h)/**)", "Write(/\($h)/**)" ]
   | .permissions.additionalDirectories = [$c, $r, "/Users/mio/Clipping"]' "$S" > "$S.tmp" && mv "$S.tmp" "$S"
 
-CLIP_OVERRIDE="$CLIP" MAX_PRO_LAUF="${MAX_PRO_LAUF:-4}" bash "$HOME/Clipping/automation/cut_inbox.sh"
+NACH_CLIP="$HOME/Clipping/ci/nach_clip.sh" CLIP_OVERRIDE="$CLIP" MAX_PRO_LAUF="${MAX_PRO_LAUF:-4}" bash "$HOME/Clipping/automation/cut_inbox.sh"
 
 # Ergebnisse hochladen (nur echte Dateien, keine 0-Byte-Platzhalter)
 rclone copy "$CLIP/fertig" "$RC/fertig" --min-size 1b
