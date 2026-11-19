@@ -2,8 +2,8 @@ studio/node_modules/
 studio/public/arbeit/
 studio/public/test/
 studio/whisper.cpp/
-tools/
-arbeit/
+/tools/
+/arbeit/
 automation/*.key
 automation/.lock
 automation/fehlversuche.txt

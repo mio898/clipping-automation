@@ -2,7 +2,7 @@
 # Dauerbereitschaft: launchd startet das alle 3 Minuten. Ohne neue Datei nur ein kurzer Blick in den Ordner – kostet keine Token.
 # Grok gibt nur fertige Momente frei → hier wird nur geschnitten. Pro Moment eine eigene, kurze Claude-Sitzung.
 # Postet nie etwas.
-export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin:$PATH:/usr/bin:/bin:/usr/sbin:/sbin"
 AUTO="$HOME/Clipping/automation"; STUDIO="$HOME/Clipping/studio"
 
 CLIP="${CLIP_OVERRIDE:-$(find "$HOME/Library/CloudStorage" -maxdepth 3 -type d -name Clipping \( -path '*Meine Ablage*' -o -path '*My Drive*' \) 2>/dev/null | head -1)}"
@@ -21,7 +21,8 @@ command -v caffeinate >/dev/null && caffeinate -dims -w $$ &
 
 mkdir -p eingang/erledigt eingang/in_arbeit arbeit scripts fertig abgelehnt log
 cp -f "$AUTO/cut_inbox.sh" "$AUTO/cut_moment_prompt.md" scripts/ 2>/dev/null
-LOG="log/$(date +%F).md"; MAX="${MAX_PRO_LAUF:-999}"; GESCHNITTEN=0   # MAX_PRO_LAUF: auf GitHub höchstens N Clips pro Lauf (6-h-Grenze); FEHL="$AUTO/fehlversuche.txt"; touch "$FEHL"
+# MAX_PRO_LAUF: auf GitHub höchstens N Clips pro Lauf (6-h-Grenze)
+LOG="log/$(date +%F).md"; MAX="${MAX_PRO_LAUF:-999}"; GESCHNITTEN=0; FEHL="$AUTO/fehlversuche.txt"; touch "$FEHL"
 say() { echo "$(date '+%F %T') $*"; echo "- $(date '+%H:%M') $*" >> "$LOG"; }
 
 # Neue Dateien übernehmen (Grok kann währenddessen weitere ablegen – die holt der nächste Durchgang)
